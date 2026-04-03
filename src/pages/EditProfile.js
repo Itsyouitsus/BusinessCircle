@@ -204,10 +204,10 @@ export default function EditProfile() {
             <label>Gender</label>
             <select className="form-input" value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })} style={{ cursor: 'pointer' }}>
               <option value="">Select</option>
-              <option value="M">Male</option>
-              <option value="F">Female</option>
-              <option value="Other">Other</option>
-              <option value="Prefer not to say">Prefer not to say</option>
+              <option value="M">Boy</option>
+              <option value="F">Girl</option>
+              
+              
             </select>
           </div>
         </div>
