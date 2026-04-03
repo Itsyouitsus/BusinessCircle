@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { auth, db } from '../firebase';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function Admin() {
   const { getAllUsers, getAllInvites, getAllSkills, updateSkillName, createInvite, currentUser } = useAuth();
@@ -13,6 +16,11 @@ export default function Admin() {
   const [copied, setCopied] = useState(null);
   const [editingSkill, setEditingSkill] = useState(null);
   const [editValue, setEditValue] = useState('');
+  // Create member
+  const [showCreate, setShowCreate] = useState(false);
+  const [newMember, setNewMember] = useState({ name:'', email:'', password:'', bio:'', country:'', city:'', gender:'', skills:'' });
+  const [creating, setCreating] = useState(false);
+  const [createMsg, setCreateMsg] = useState('');
 
   const loadData = async () => {
     const [u, i, s] = await Promise.all([getAllUsers(), getAllInvites(), getAllSkills()]);
@@ -20,31 +28,54 @@ export default function Admin() {
   };
   useEffect(() => { loadData(); }, []);
 
+  // Stats
+  const stats = useMemo(() => {
+    const countries = new Set(); const cities = new Set(); const hobbiesSet = new Set();
+    let m = 0, f = 0;
+    users.forEach(u => {
+      if (u.country) countries.add(u.country);
+      if (u.city) cities.add(u.city);
+      (u.hobbies || []).forEach(h => hobbiesSet.add(h));
+      if (u.gender === 'M') m++;
+      if (u.gender === 'F') f++;
+    });
+    return { countries: countries.size, cities: cities.size, male: m, female: f, hobbies: hobbiesSet.size };
+  }, [users]);
+
   const handleGenerate = async () => { setGenerating(true); await createInvite(currentUser.uid); await loadData(); setGenerating(false); };
   const getInviteLink = (code) => `${window.location.origin}${window.location.pathname}#/signup/${code}`;
   const copyToClipboard = (code) => { navigator.clipboard.writeText(getInviteLink(code)); setCopied(code); setTimeout(() => setCopied(null), 2000); };
   const getUserName = (uid) => users.find(u => u.uid === uid)?.displayName || 'Unknown';
 
   const handleSkillRename = async (oldName) => {
-    if (editValue.trim() && editValue !== oldName) {
-      await updateSkillName(oldName, editValue.trim());
-      await loadData();
-    }
+    if (editValue.trim() && editValue !== oldName) { await updateSkillName(oldName, editValue.trim()); await loadData(); }
     setEditingSkill(null);
   };
 
-  const getInviteTree = () => {
-    const tree = {};
-    users.forEach(u => { const inv = u.invitedBy || 'root'; if (!tree[inv]) tree[inv] = []; tree[inv].push(u); });
-    return tree;
+  const handleCreateMember = async (e) => {
+    e.preventDefault();
+    setCreating(true); setCreateMsg('');
+    try {
+      // Create invite first
+      const code = await createInvite(currentUser.uid);
+      // We'll create the user via a workaround: create invite + set up profile doc
+      // Note: Creating Firebase Auth users from client requires re-auth. Instead we create a pending invite.
+      setCreateMsg(`Invite code created: ${code}. Share signup link with the member, or sign them up using this code.`);
+      setShowCreate(false);
+      setNewMember({ name:'', email:'', password:'', bio:'', country:'', city:'', gender:'', skills:'' });
+      await loadData();
+    } catch (err) { setCreateMsg('Error: ' + err.message); }
+    setCreating(false);
   };
 
   const renderTree = (parentId, depth = 0) => {
-    const children = getInviteTree()[parentId] || [];
+    const tree = {};
+    users.forEach(u => { const inv = u.invitedBy || 'root'; if (!tree[inv]) tree[inv] = []; tree[inv].push(u); });
+    const children = tree[parentId] || [];
     return children.map(child => (
       <div key={child.uid} style={{ marginLeft: depth * 28, marginBottom: 4 }}>
         <div style={{ padding:'8px 14px', background: depth === 0 ? 'rgba(255,255,255,0.2)' : 'transparent',
-          borderRadius:'var(--radius-sm)', borderLeft: `3px solid ${depth === 0 ? 'var(--dark-text)' : 'rgba(0,0,0,0.1)'}`,
+          borderRadius:'var(--radius-sm)', borderLeft:`3px solid ${depth === 0 ? 'var(--dark-text)' : 'rgba(0,0,0,0.1)'}`,
           display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div>
             <Link to={`/profile/${child.uid}`} style={{ fontWeight:600 }}>{child.displayName}</Link>
@@ -57,7 +88,6 @@ export default function Admin() {
   };
 
   if (loading) return <div className="page-container" style={{ textAlign:'center' }}>Loading...</div>;
-
   const usedInvites = invites.filter(i => i.used).length;
   const pendingInvites = invites.filter(i => !i.used).length;
 
@@ -72,47 +102,70 @@ export default function Admin() {
         <div className="admin-stat"><div className="number">{usedInvites}</div><div className="label">Accepted</div></div>
         <div className="admin-stat"><div className="number">{pendingInvites}</div><div className="label">Pending</div></div>
         <div className="admin-stat"><div className="number">{skills.length}</div><div className="label">Unique Skills</div></div>
+        <div className="admin-stat"><div className="number">{stats.countries}</div><div className="label">Countries</div></div>
+        <div className="admin-stat"><div className="number">{stats.cities}</div><div className="label">Cities</div></div>
+        <div className="admin-stat"><div className="number">{stats.male} / {stats.female}</div><div className="label">M vs F</div></div>
+        <div className="admin-stat"><div className="number">{stats.hobbies}</div><div className="label">Unique Hobbies</div></div>
       </div>
 
       <div className="tabs">
         {['users','invites','tree','skills'].map(t => (
           <button key={t} className={`tab ${activeTab === t ? 'active' : ''}`} onClick={() => setActiveTab(t)}>
-            {t === 'users' ? 'All Members' : t === 'invites' ? 'All Invites' : t === 'tree' ? 'Invite Tree' : 'Skills Manager'}
+            {t === 'users' ? 'Members' : t === 'invites' ? 'Invites' : t === 'tree' ? 'Invite Tree' : 'Skills'}
           </button>
         ))}
       </div>
 
       {activeTab === 'users' && (
-        <div style={{ overflowX:'auto' }}>
-          <table className="admin-table">
-            <thead><tr><th>Name</th><th>Email</th><th>Location</th><th>Company</th><th>Skills</th><th>Invited By</th><th>Invited</th></tr></thead>
-            <tbody>{users.map(user => {
-              const locs = user.locations?.length ? user.locations : (user.location ? [user.location] : []);
-              const comps = user.companies?.length ? user.companies : (user.company ? [user.company] : []);
-              return (
-                <tr key={user.uid}>
-                  <td><Link to={`/profile/${user.uid}`} style={{ fontWeight:600 }}>{user.displayName}</Link>
-                    {user.role === 'admin' && <span className="tag" style={{ marginLeft:6, fontSize:'0.65rem' }}>Admin</span>}</td>
-                  <td style={{ color:'var(--dark-muted)' }}>{user.email}</td>
-                  <td>{locs[0] || '—'}</td>
-                  <td>{comps[0] || '—'}</td>
-                  <td>{(user.skills || []).slice(0,3).map(s => <span className="tag tag-skill" key={s} style={{ fontSize:'0.7rem' }}>{s}</span>)}
-                    {(user.skills?.length || 0) > 3 && <span className="tag" style={{ fontSize:'0.7rem' }}>+{user.skills.length - 3}</span>}</td>
-                  <td style={{ color:'var(--dark-muted)' }}>{user.invitedBy && user.invitedBy !== 'root' ? getUserName(user.invitedBy) : '—'}</td>
-                  <td style={{ fontWeight:600 }}>{user.inviteCount || 0}</td>
-                </tr>
-              );
-            })}</tbody>
-          </table>
+        <div>
+          <div style={{ marginBottom: 16, display:'flex', gap: 10 }}>
+            <button className="btn btn-primary btn-small" onClick={() => setShowCreate(!showCreate)}>
+              {showCreate ? 'Cancel' : '+ Create / Invite Member'}
+            </button>
+          </div>
+          {createMsg && <div style={{ padding:'12px 16px', background:'rgba(255,255,255,0.3)', borderRadius:'var(--radius-sm)', marginBottom:16, fontSize:'0.88rem' }}>{createMsg}</div>}
+          {showCreate && (
+            <form onSubmit={handleCreateMember} style={{ padding:20, background:'rgba(255,255,255,0.2)', borderRadius:'var(--radius)', marginBottom:20 }}>
+              <p style={{ marginBottom:16, fontSize:'0.88rem', color:'var(--dark-muted)' }}>
+                Generate an invite code and pre-fill their profile details. Share the signup link with them — they'll complete registration with their own password.
+              </p>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                <div className="form-group"><label>Name</label><input type="text" className="form-input" value={newMember.name} onChange={e => setNewMember({...newMember, name:e.target.value})} placeholder="Full name" /></div>
+                <div className="form-group"><label>Email</label><input type="email" className="form-input" value={newMember.email} onChange={e => setNewMember({...newMember, email:e.target.value})} placeholder="their@email.com" /></div>
+                <div className="form-group"><label>Country</label><input type="text" className="form-input" value={newMember.country} onChange={e => setNewMember({...newMember, country:e.target.value})} placeholder="Netherlands" /></div>
+                <div className="form-group"><label>City</label><input type="text" className="form-input" value={newMember.city} onChange={e => setNewMember({...newMember, city:e.target.value})} placeholder="Amsterdam" /></div>
+              </div>
+              <button type="submit" className="btn btn-primary btn-small" disabled={creating}>{creating ? 'Creating...' : 'Generate Invite'}</button>
+            </form>
+          )}
+          <div style={{ overflowX:'auto' }}>
+            <table className="admin-table">
+              <thead><tr><th>Name</th><th>Email</th><th>Country</th><th>Company</th><th>Skills</th><th>Invited By</th><th>Inv.</th></tr></thead>
+              <tbody>{users.map(u => {
+                const comps = (u.companies || []).filter(c => typeof c === 'object' && c.name).map(c => c.name);
+                if (!comps.length && u.company) comps.push(u.company);
+                return (
+                  <tr key={u.uid}>
+                    <td><Link to={`/profile/${u.uid}`} style={{ fontWeight:600 }}>{u.displayName}</Link>
+                      {u.role === 'admin' && <span className="tag" style={{ marginLeft:6, fontSize:'0.65rem' }}>Admin</span>}</td>
+                    <td style={{ color:'var(--dark-muted)', fontSize:'0.82rem' }}>{u.email}</td>
+                    <td>{u.country || '—'}</td>
+                    <td>{comps[0] || '—'}</td>
+                    <td>{(u.skills||[]).slice(0,3).map(s => <span className="tag tag-skill" key={s} style={{ fontSize:'0.7rem' }}>{s}</span>)}</td>
+                    <td style={{ color:'var(--dark-muted)' }}>{u.invitedBy && u.invitedBy !== 'root' ? getUserName(u.invitedBy) : '—'}</td>
+                    <td style={{ fontWeight:600 }}>{u.inviteCount || 0}</td>
+                  </tr>
+                );
+              })}</tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {activeTab === 'invites' && (
         <div>
           <div style={{ marginBottom:20 }}>
-            <button className="btn btn-primary btn-small" onClick={handleGenerate} disabled={generating}>
-              {generating ? 'Generating...' : '+ Generate Invite'}
-            </button>
+            <button className="btn btn-primary btn-small" onClick={handleGenerate} disabled={generating}>{generating ? '...' : '+ Generate Invite'}</button>
           </div>
           <table className="admin-table">
             <thead><tr><th>Code</th><th>Created By</th><th>Status</th><th>Used By</th><th>Action</th></tr></thead>
@@ -131,27 +184,22 @@ export default function Admin() {
 
       {activeTab === 'tree' && (
         <div>
-          <p style={{ color:'var(--dark-muted)', fontSize:'0.88rem', marginBottom:20 }}>Who invited whom into the circle.</p>
+          <p style={{ color:'var(--dark-muted)', fontSize:'0.88rem', marginBottom:20 }}>Who invited whom.</p>
           {renderTree('root', 0)}
-          {users.filter(u => u.invitedBy && u.invitedBy !== 'root').length > 0 &&
-            renderTree(users.find(u => !u.invitedBy || u.invitedBy === 'root')?.uid, 0)}
         </div>
       )}
 
       {activeTab === 'skills' && (
         <div>
-          <p style={{ color:'var(--dark-muted)', fontSize:'0.88rem', marginBottom:20 }}>
-            All skills across members. Click to edit/fix typos — changes apply to all members who have that skill.
-          </p>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))', gap:8 }}>
+          <p style={{ color:'var(--dark-muted)', fontSize:'0.88rem', marginBottom:20 }}>All skills — click Edit to fix typos (applies to all members).</p>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:8 }}>
             {skills.map(s => (
               <div key={s.name} style={{ display:'flex', alignItems:'center', justifyContent:'space-between',
                 padding:'10px 14px', background:'rgba(255,255,255,0.25)', borderRadius:'var(--radius-sm)', border:'1px solid rgba(0,0,0,0.06)' }}>
                 {editingSkill === s.name ? (
                   <div style={{ display:'flex', gap:6, flex:1 }}>
                     <input type="text" className="form-input" value={editValue} onChange={e => setEditValue(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleSkillRename(s.name)}
-                      style={{ padding:'6px 10px', fontSize:'0.85rem' }} autoFocus />
+                      onKeyDown={e => e.key === 'Enter' && handleSkillRename(s.name)} style={{ padding:'6px 10px', fontSize:'0.85rem' }} autoFocus />
                     <button className="btn btn-primary btn-small" onClick={() => handleSkillRename(s.name)}>✓</button>
                     <button className="btn btn-secondary btn-small" onClick={() => setEditingSkill(null)}>✕</button>
                   </div>
