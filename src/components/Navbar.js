@@ -6,17 +6,10 @@ export default function Navbar() {
   const { userProfile, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-
   const isActive = (path) => location.pathname === path ? 'active' : '';
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
+  const handleLogout = async () => { await logout(); navigate('/login'); };
   const initials = userProfile?.displayName
-    ? userProfile.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    : '?';
+    ? userProfile.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?';
 
   return (
     <nav className="navbar">
@@ -24,21 +17,15 @@ export default function Navbar() {
       <div className="navbar-links">
         <Link to="/" className={isActive('/')}>Home</Link>
         <Link to="/members" className={isActive('/members')}>Members</Link>
+        <Link to="/news" className={isActive('/news')}>News</Link>
+        <Link to="/forum" className={isActive('/forum')}>Forum</Link>
         <Link to="/my-invites" className={isActive('/my-invites')}>Invite</Link>
-        {userProfile?.role === 'admin' && (
-          <Link to="/admin" className={isActive('/admin')}>Admin</Link>
-        )}
+        {userProfile?.role === 'admin' && <Link to="/admin" className={isActive('/admin')}>Admin</Link>}
         <div className="navbar-user">
           <Link to="/edit-profile" className="navbar-avatar" title="Edit Profile">
-            {initials}
+            {userProfile?.photoURL ? <img src={userProfile.photoURL} alt="" /> : initials}
           </Link>
-          <button
-            onClick={handleLogout}
-            style={{
-              background: 'none', border: 'none', color: 'var(--gray-400)',
-              cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'var(--font-body)'
-            }}
-          >
+          <button onClick={handleLogout} style={{ background:'none', border:'none', color:'var(--dark-muted)', cursor:'pointer', fontSize:'0.78rem', fontFamily:'var(--font-body)', fontWeight:600 }}>
             Logout
           </button>
         </div>

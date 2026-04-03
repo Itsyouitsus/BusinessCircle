@@ -10,6 +10,8 @@ import Profile from './pages/Profile';
 import EditProfile from './pages/EditProfile';
 import MyInvites from './pages/MyInvites';
 import Admin from './pages/Admin';
+import Forum from './pages/Forum';
+import News from './pages/News';
 import './styles/index.css';
 
 function PrivateRoute({ children }) {
@@ -33,7 +35,6 @@ function PublicRoute({ children }) {
 
 function AppContent() {
   const { currentUser } = useAuth();
-
   return (
     <>
       {currentUser && <Navbar />}
@@ -46,6 +47,8 @@ function AppContent() {
         <Route path="/profile/:uid" element={<PrivateRoute><Profile /></PrivateRoute>} />
         <Route path="/edit-profile" element={<PrivateRoute><EditProfile /></PrivateRoute>} />
         <Route path="/my-invites" element={<PrivateRoute><MyInvites /></PrivateRoute>} />
+        <Route path="/forum" element={<PrivateRoute><Forum /></PrivateRoute>} />
+        <Route path="/news" element={<PrivateRoute><News /></PrivateRoute>} />
         <Route path="/admin" element={<PrivateRoute><AdminRoute><Admin /></AdminRoute></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
