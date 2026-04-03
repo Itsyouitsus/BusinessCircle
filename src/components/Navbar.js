@@ -1,0 +1,48 @@
+import React from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+
+export default function Navbar() {
+  const { userProfile, logout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isActive = (path) => location.pathname === path ? 'active' : '';
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const initials = userProfile?.displayName
+    ? userProfile.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : '?';
+
+  return (
+    <nav className="navbar">
+      <Link to="/" className="navbar-brand">Business Circle</Link>
+      <div className="navbar-links">
+        <Link to="/" className={isActive('/')}>Home</Link>
+        <Link to="/members" className={isActive('/members')}>Members</Link>
+        <Link to="/my-invites" className={isActive('/my-invites')}>Invite</Link>
+        {userProfile?.role === 'admin' && (
+          <Link to="/admin" className={isActive('/admin')}>Admin</Link>
+        )}
+        <div className="navbar-user">
+          <Link to="/edit-profile" className="navbar-avatar" title="Edit Profile">
+            {initials}
+          </Link>
+          <button
+            onClick={handleLogout}
+            style={{
+              background: 'none', border: 'none', color: 'var(--gray-400)',
+              cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'var(--font-body)'
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+}
