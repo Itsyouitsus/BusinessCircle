@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { auth, db } from '../firebase';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
+import { doc, updateDoc, Timestamp } from 'firebase/firestore';
 
 export default function Admin() {
   const { getAllUsers, getAllInvites, getAllSkills, updateSkillName, createInvite, currentUser } = useAuth();
@@ -16,9 +15,10 @@ export default function Admin() {
   const [copied, setCopied] = useState(null);
   const [editingSkill, setEditingSkill] = useState(null);
   const [editValue, setEditValue] = useState('');
-  // Create member
+  const [editingDate, setEditingDate] = useState(null);
+  const [dateValue, setDateValue] = useState('');
   const [showCreate, setShowCreate] = useState(false);
-  const [newMember, setNewMember] = useState({ name:'', email:'', password:'', bio:'', country:'', city:'', gender:'', skills:'' });
+  const [newMember, setNewMember] = useState({ name:'', email:'', country:'', city:'' });
   const [creating, setCreating] = useState(false);
   const [createMsg, setCreateMsg] = useState('');
 
@@ -28,7 +28,6 @@ export default function Admin() {
   };
   useEffect(() => { loadData(); }, []);
 
-  // Stats
   const stats = useMemo(() => {
     const countries = new Set(); const cities = new Set(); const hobbiesSet = new Set();
     let m = 0, f = 0;
@@ -52,20 +51,40 @@ export default function Admin() {
     setEditingSkill(null);
   };
 
+  const handleDateOverride = async (uid) => {
+    if (!dateValue) { setEditingDate(null); return; }
+    try {
+      const d = new Date(dateValue);
+      d.setHours(12, 0, 0, 0);
+      await updateDoc(doc(db, 'users', uid), { createdAt: Timestamp.fromDate(d) });
+      setEditingDate(null);
+      await loadData();
+    } catch (err) { console.error(err); }
+  };
+
   const handleCreateMember = async (e) => {
     e.preventDefault();
     setCreating(true); setCreateMsg('');
     try {
-      // Create invite first
       const code = await createInvite(currentUser.uid);
-      // We'll create the user via a workaround: create invite + set up profile doc
-      // Note: Creating Firebase Auth users from client requires re-auth. Instead we create a pending invite.
-      setCreateMsg(`Invite code created: ${code}. Share signup link with the member, or sign them up using this code.`);
+      setCreateMsg(`Invite created: ${code} — share the signup link with them.`);
       setShowCreate(false);
-      setNewMember({ name:'', email:'', password:'', bio:'', country:'', city:'', gender:'', skills:'' });
+      setNewMember({ name:'', email:'', country:'', city:'' });
       await loadData();
     } catch (err) { setCreateMsg('Error: ' + err.message); }
     setCreating(false);
+  };
+
+  const formatDate = (ts) => {
+    if (!ts) return '—';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  };
+
+  const toInputDate = (ts) => {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toISOString().split('T')[0];
   };
 
   const renderTree = (parentId, depth = 0) => {
@@ -118,7 +137,7 @@ export default function Admin() {
 
       {activeTab === 'users' && (
         <div>
-          <div style={{ marginBottom: 16, display:'flex', gap: 10 }}>
+          <div style={{ marginBottom:16, display:'flex', gap:10 }}>
             <button className="btn btn-primary btn-small" onClick={() => setShowCreate(!showCreate)}>
               {showCreate ? 'Cancel' : '+ Create / Invite Member'}
             </button>
@@ -127,7 +146,7 @@ export default function Admin() {
           {showCreate && (
             <form onSubmit={handleCreateMember} style={{ padding:20, background:'rgba(255,255,255,0.2)', borderRadius:'var(--radius)', marginBottom:20 }}>
               <p style={{ marginBottom:16, fontSize:'0.88rem', color:'var(--dark-muted)' }}>
-                Generate an invite code and pre-fill their profile details. Share the signup link with them — they'll complete registration with their own password.
+                Generate an invite code. Share the signup link with them.
               </p>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
                 <div className="form-group"><label>Name</label><input type="text" className="form-input" value={newMember.name} onChange={e => setNewMember({...newMember, name:e.target.value})} placeholder="Full name" /></div>
@@ -140,7 +159,7 @@ export default function Admin() {
           )}
           <div style={{ overflowX:'auto' }}>
             <table className="admin-table">
-              <thead><tr><th>Name</th><th>Email</th><th>Country</th><th>Company</th><th>Skills</th><th>Invited By</th><th>Inv.</th></tr></thead>
+              <thead><tr><th>Name</th><th>Email</th><th>Country</th><th>Company</th><th>Skills</th><th>Invited By</th><th>Inv.</th><th>Member Since</th></tr></thead>
               <tbody>{users.map(u => {
                 const comps = (u.companies || []).filter(c => typeof c === 'object' && c.name).map(c => c.name);
                 if (!comps.length && u.company) comps.push(u.company);
@@ -154,6 +173,22 @@ export default function Admin() {
                     <td>{(u.skills||[]).slice(0,3).map(s => <span className="tag tag-skill" key={s} style={{ fontSize:'0.7rem' }}>{s}</span>)}</td>
                     <td style={{ color:'var(--dark-muted)' }}>{u.invitedBy && u.invitedBy !== 'root' ? getUserName(u.invitedBy) : '—'}</td>
                     <td style={{ fontWeight:600 }}>{u.inviteCount || 0}</td>
+                    <td>
+                      {editingDate === u.uid ? (
+                        <div style={{ display:'flex', gap:4, alignItems:'center' }}>
+                          <input type="date" className="form-input" value={dateValue}
+                            onChange={e => setDateValue(e.target.value)}
+                            style={{ padding:'6px 8px', fontSize:'0.8rem', width:140 }} />
+                          <button className="btn btn-primary btn-small" style={{ padding:'4px 8px' }} onClick={() => handleDateOverride(u.uid)}>✓</button>
+                          <button className="btn btn-secondary btn-small" style={{ padding:'4px 8px' }} onClick={() => setEditingDate(null)}>✕</button>
+                        </div>
+                      ) : (
+                        <span style={{ cursor:'pointer', borderBottom:'1px dashed rgba(0,0,0,0.2)' }}
+                          onClick={() => { setEditingDate(u.uid); setDateValue(toInputDate(u.createdAt)); }}>
+                          {formatDate(u.createdAt)}
+                        </span>
+                      )}
+                    </td>
                   </tr>
                 );
               })}</tbody>
@@ -191,7 +226,7 @@ export default function Admin() {
 
       {activeTab === 'skills' && (
         <div>
-          <p style={{ color:'var(--dark-muted)', fontSize:'0.88rem', marginBottom:20 }}>All skills — click Edit to fix typos (applies to all members).</p>
+          <p style={{ color:'var(--dark-muted)', fontSize:'0.88rem', marginBottom:20 }}>All skills — click to edit/fix typos (applies to all members).</p>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:8 }}>
             {skills.map(s => (
               <div key={s.name} style={{ display:'flex', alignItems:'center', justifyContent:'space-between',
