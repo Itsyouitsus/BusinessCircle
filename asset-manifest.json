@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/BusinessCircle/static/css/main.438da12e.css",
+    "main.js": "/BusinessCircle/static/js/main.39922c76.js",
+    "index.html": "/BusinessCircle/index.html",
+    "main.438da12e.css.map": "/BusinessCircle/static/css/main.438da12e.css.map",
+    "main.39922c76.js.map": "/BusinessCircle/static/js/main.39922c76.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.438da12e.css",
+    "static/js/main.39922c76.js"
+  ]
+}
