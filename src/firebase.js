@@ -2,15 +2,14 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// TODO: Replace with your Firebase project config
-// Go to https://console.firebase.google.com → Create project → Web app → Copy config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDtn_R3a4c5ORzHP-r7QnYYRyOY8qFzTtY",
+  authDomain: "businesscircle-bbcf8.firebaseapp.com",
+  projectId: "businesscircle-bbcf8",
+  storageBucket: "businesscircle-bbcf8.firebasestorage.app",
+  messagingSenderId: "379245953499",
+  appId: "1:379245953499:web:61852a3dcfc3561c3367fe",
+  measurementId: "G-MFNXDY9ZXF"
 };
 
 const app = initializeApp(firebaseConfig);
