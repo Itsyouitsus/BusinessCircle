@@ -4,19 +4,27 @@ import { useAuth } from '../contexts/AuthContext';
 
 export default function Profile() {
   const { uid } = useParams();
-  const { getUserProfile, currentUser } = useAuth();
+  const { getUserProfile, currentUser, getForumPosts } = useAuth();
   const [profile, setProfile] = useState(null);
   const [inviterName, setInviterName] = useState(null);
+  const [forumStats, setForumStats] = useState({ topics: 0, replies: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const p = await getUserProfile(uid);
+      const [p, posts] = await Promise.all([getUserProfile(uid), getForumPosts()]);
       setProfile(p);
       if (p?.invitedBy && p.invitedBy !== 'root') {
         const inv = await getUserProfile(p.invitedBy);
         setInviterName(inv?.displayName || 'Unknown');
       }
+      // Count forum activity
+      let topics = 0, replies = 0;
+      posts.forEach(post => {
+        if (post.authorId === uid) topics++;
+        (post.replies || []).forEach(r => { if (r.authorId === uid) replies++; });
+      });
+      setForumStats({ topics, replies });
       setLoading(false);
     })();
   }, [uid]);
@@ -37,13 +45,14 @@ export default function Profile() {
           <h1>{profile.displayName}</h1>
           <div className="profile-meta">
             {location && <span>📍 {location}</span>}
-            {profile.gender && <span>{profile.gender === 'M' ? '♂' : profile.gender === 'F' ? '♀' : '⚧'} {profile.gender === 'M' ? 'Male' : profile.gender === 'F' ? 'Female' : profile.gender}</span>}
+            {profile.gender && <span>{profile.gender === 'M' ? '♂' : '♀'} {profile.gender === 'M' ? 'Boy' : 'Girl'}</span>}
             <span>👥 Invited {profile.inviteCount || 0}</span>
           </div>
           <div className="profile-meta" style={{ marginTop: 6 }}>
             {profile.personalLinkedin && (
               <span>💼 <a href={profile.personalLinkedin.startsWith('http') ? profile.personalLinkedin : `https://${profile.personalLinkedin}`} target="_blank" rel="noreferrer" style={{ textDecoration:'underline' }}>LinkedIn</a></span>
             )}
+            <span>💬 {forumStats.topics} topic{forumStats.topics !== 1 ? 's' : ''} · {forumStats.replies} repl{forumStats.replies !== 1 ? 'ies' : 'y'}</span>
           </div>
           {isOwn && <Link to="/edit-profile" className="btn btn-outline btn-small" style={{ marginTop: 14 }}>Edit Profile</Link>}
         </div>

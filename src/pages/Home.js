@@ -24,7 +24,7 @@ export default function Home() {
             {[
               { to:'/members', title:'Members', desc:'Browse all members and discover skills across the circle.' },
               { to:'/news', title:'News', desc:'Latest updates and articles shared by the group.' },
-              { to:'/forum', title:'Forum', desc:'Start conversations, ask questions, get feedback.' },
+              { to:'/forum', title:'Market Forum', desc:'Start conversations, ask questions, pitch ideas.' },
               { to:'/my-invites', title:'Invite Someone', desc:'Generate an invite link and grow the circle.' },
               { to:'/edit-profile', title:'Your Profile', desc:'Update your skills and let others know what you bring.' },
             ].map(c => (

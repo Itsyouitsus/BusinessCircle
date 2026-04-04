@@ -18,7 +18,7 @@ export default function Navbar() {
         <Link to="/" className={isActive('/')}>Home</Link>
         <Link to="/members" className={isActive('/members')}>Members</Link>
         <Link to="/news" className={isActive('/news')}>News</Link>
-        <Link to="/forum" className={isActive('/forum')}>Forum</Link>
+        <Link to="/forum" className={isActive('/forum')}>Market Forum</Link>
         <Link to="/my-invites" className={isActive('/my-invites')}>Invite</Link>
         {userProfile?.role === 'admin' && <Link to="/admin" className={isActive('/admin')}>Admin</Link>}
         <div className="navbar-user">

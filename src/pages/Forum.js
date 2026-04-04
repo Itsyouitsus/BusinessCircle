@@ -49,12 +49,12 @@ export default function Forum() {
   return (
     <div className="page-container" style={{ maxWidth:800 }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-        <h1 className="page-title">Forum</h1>
+        <h1 className="page-title">Market Forum</h1>
         <button className="btn btn-primary btn-small" onClick={() => setShowNew(!showNew)}>
           {showNew ? 'Cancel' : '+ New Topic'}
         </button>
       </div>
-      <p className="page-subtitle">Start a conversation, ask questions, share ideas</p>
+      <p className="page-subtitle">Start a conversation, ask questions, pitch ideas</p>
 
       {showNew && (
         <form onSubmit={handlePost} style={{ marginBottom:28, padding:24, background:'rgba(255,255,255,0.25)', borderRadius:'var(--radius)' }}>
