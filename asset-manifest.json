@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/BusinessCircle/static/css/main.91cb4957.css",
-    "main.js": "/BusinessCircle/static/js/main.b18e5470.js",
+    "main.js": "/BusinessCircle/static/js/main.7788e416.js",
     "index.html": "/BusinessCircle/index.html",
     "main.91cb4957.css.map": "/BusinessCircle/static/css/main.91cb4957.css.map",
-    "main.b18e5470.js.map": "/BusinessCircle/static/js/main.b18e5470.js.map"
+    "main.7788e416.js.map": "/BusinessCircle/static/js/main.7788e416.js.map"
   },
   "entrypoints": [
     "static/css/main.91cb4957.css",
-    "static/js/main.b18e5470.js"
+    "static/js/main.7788e416.js"
   ]
 }
