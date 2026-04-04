@@ -12,7 +12,6 @@ import MyInvites from './pages/MyInvites';
 import Admin from './pages/Admin';
 import Forum from './pages/Forum';
 import News from './pages/News';
-import Settings from './pages/Settings';
 import GuestTeaser from './components/GuestTeaser';
 import './styles/index.css';
 
@@ -60,7 +59,6 @@ function AppContent() {
         } />
         <Route path="/edit-profile" element={<PrivateRoute><EditProfile /></PrivateRoute>} />
         <Route path="/my-invites" element={<PrivateRoute><MyInvites /></PrivateRoute>} />
-        <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
         <Route path="/forum" element={
           <GuestOrAuth title="Market Forum" description="Our members discuss ideas, ask questions, share feedback, and pitch their ventures. Join the conversation and connect with fellow entrepreneurs."><Forum /></GuestOrAuth>
         } />

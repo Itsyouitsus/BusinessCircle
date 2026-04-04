@@ -22,10 +22,6 @@ export default function Navbar() {
         <Link to="/my-invites" className={isActive('/my-invites')}>Invite</Link>
         {userProfile?.role === 'admin' && <Link to="/admin" className={isActive('/admin')}>Admin</Link>}
         <div className="navbar-user">
-          <Link to="/settings" title="Notification Settings" style={{
-            opacity: location.pathname === '/settings' ? 1 : 0.5,
-            fontSize: '1.1rem', transition: 'opacity 0.2s', display: 'flex', alignItems: 'center'
-          }}>⚙</Link>
           <Link to="/edit-profile" className="navbar-avatar" title="Edit Profile">
             {userProfile?.photoURL ? <img src={userProfile.photoURL} alt="" /> : initials}
           </Link>
