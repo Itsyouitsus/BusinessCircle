@@ -12,6 +12,7 @@ import MyInvites from './pages/MyInvites';
 import Admin from './pages/Admin';
 import Forum from './pages/Forum';
 import News from './pages/News';
+import Settings from './pages/Settings';
 import GuestTeaser from './components/GuestTeaser';
 import './styles/index.css';
 
@@ -52,26 +53,19 @@ function AppContent() {
         <Route path="/signup/:inviteCode" element={<PublicRoute><Signup /></PublicRoute>} />
         <Route path="/" element={<Home />} />
         <Route path="/members" element={
-          <GuestOrAuth title="Members" description="Browse our community of entrepreneurs from around the world. See their skills, companies, and expertise — and find people who can help you or who you can help.">
-            <Members />
-          </GuestOrAuth>
+          <GuestOrAuth title="Members" description="Browse our community of entrepreneurs from around the world. See their skills, companies, and expertise — and find people who can help you or who you can help."><Members /></GuestOrAuth>
         } />
         <Route path="/profile/:uid" element={
-          <GuestOrAuth title="Member Profile" description="View detailed profiles of our members — their skills, companies, interests, and how they contribute to the circle.">
-            <Profile />
-          </GuestOrAuth>
+          <GuestOrAuth title="Member Profile" description="View detailed profiles of our members — their skills, companies, interests, and how they contribute to the circle."><Profile /></GuestOrAuth>
         } />
         <Route path="/edit-profile" element={<PrivateRoute><EditProfile /></PrivateRoute>} />
         <Route path="/my-invites" element={<PrivateRoute><MyInvites /></PrivateRoute>} />
+        <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
         <Route path="/forum" element={
-          <GuestOrAuth title="Market Forum" description="Our members discuss ideas, ask questions, share feedback, and pitch their ventures. Join the conversation and connect with fellow entrepreneurs.">
-            <Forum />
-          </GuestOrAuth>
+          <GuestOrAuth title="Market Forum" description="Our members discuss ideas, ask questions, share feedback, and pitch their ventures. Join the conversation and connect with fellow entrepreneurs."><Forum /></GuestOrAuth>
         } />
         <Route path="/news" element={
-          <GuestOrAuth title="News" description="Stay up to date with the latest news, articles, and updates shared by our community of entrepreneurs.">
-            <News />
-          </GuestOrAuth>
+          <GuestOrAuth title="News" description="Stay up to date with the latest news, articles, and updates shared by our community of entrepreneurs."><News /></GuestOrAuth>
         } />
         <Route path="/admin" element={<PrivateRoute><AdminRoute><Admin /></AdminRoute></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" />} />
