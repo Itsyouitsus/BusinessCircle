@@ -11,7 +11,7 @@ export default function GuestTeaser({ title, description }) {
           <Link to="/members">Members</Link>
           <Link to="/news">News</Link>
           <Link to="/forum">Market Forum</Link>
-          <Link to="/login" className="btn btn-primary btn-small" style={{ marginLeft: 8, padding: '8px 20px' }}>Log In</Link>
+          <Link to="/login" style={{ background:'var(--dark-text)', color:'var(--gold)', padding:'8px 18px', borderRadius:10, fontWeight:700, fontSize:'0.8rem', whiteSpace:'nowrap' }}>Log In</Link>
         </div>
       </nav>
 

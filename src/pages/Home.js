@@ -9,8 +9,12 @@ function GuestNav() {
       <div className="navbar-links">
         <Link to="/members">Members</Link>
         <Link to="/news">News</Link>
-        <Link to="/forum">Market Forum</Link>
-        <Link to="/login" className="btn btn-primary btn-small" style={{ marginLeft: 8 }}>Log In</Link>
+        <Link to="/forum">Forum</Link>
+        <Link to="/login" style={{
+          background: 'var(--dark-text)', color: 'var(--gold)',
+          padding: '8px 18px', borderRadius: 10, fontWeight: 700,
+          fontSize: '0.8rem', whiteSpace: 'nowrap'
+        }}>Log In</Link>
       </div>
     </nav>
   );
@@ -30,8 +34,6 @@ export default function Home() {
       </div>
 
       <div className="page-container">
-
-        {/* Logged-in view */}
         {!isGuest && (
           <div style={{ maxWidth: 720 }}>
             <h2 style={{ fontSize: '1.8rem', marginBottom: 14 }}>
@@ -61,12 +63,9 @@ export default function Home() {
           </div>
         )}
 
-        {/* Guest view — two columns */}
         {isGuest && (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'start' }}>
-
-              {/* Left: The idea */}
+            <div className="home-two-col">
               <div>
                 <h2 style={{ fontSize: '1.8rem', marginBottom: 14 }}>The idea</h2>
                 <p style={{ color: 'var(--dark-muted)', marginBottom: 16, fontSize: '1rem', lineHeight: 1.7 }}>
@@ -84,8 +83,6 @@ export default function Home() {
                   each other in any way possible. And here we are. Our business circle was born.
                 </p>
               </div>
-
-              {/* Right: What's inside */}
               <div>
                 <h2 style={{ fontSize: '1.8rem', marginBottom: 14 }}>What you'll find inside</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -104,7 +101,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Sign in block centered underneath */}
             <div style={{
               textAlign: 'center', padding: '36px 24px', marginTop: 48,
               background: 'rgba(255,255,255,0.25)', borderRadius: 'var(--radius)',
@@ -112,9 +108,9 @@ export default function Home() {
             }}>
               <h2 style={{ fontSize: '1.5rem', marginBottom: 10 }}>Ready to join?</h2>
               <p style={{ color: 'var(--dark-muted)', marginBottom: 24, fontSize: '0.95rem' }}>
-                Business Circle is invite-only. If you have an invite code, sign up below. Otherwise, ask a member to invite you.
+                Business Circle is invite-only. If you have an invite code, sign up below.
               </p>
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link to="/login" className="btn btn-primary">Log In</Link>
                 <Link to="/signup" className="btn btn-outline">Sign Up with Invite Code</Link>
               </div>
