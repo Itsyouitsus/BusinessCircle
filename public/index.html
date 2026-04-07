@@ -8,15 +8,14 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Business Circle" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-  <link rel="icon" href="icon-192.png" />
-  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/icon-192.png" />
+  <link rel="icon" href="%PUBLIC_URL%/icon-192.png" />
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
   <title>Business Circle</title>
   <style>
-    /* Splash screen while app loads */
     #splash { position:fixed; inset:0; background:#F5C400; display:flex; align-items:center; justify-content:center; z-index:9999; transition:opacity 0.3s; }
     #splash.hide { opacity:0; pointer-events:none; }
     #splash div { text-align:center; }
@@ -28,18 +27,15 @@
   <div id="splash"><div><h1>Business Circle</h1><p>Loading...</p></div></div>
   <div id="root"></div>
   <script>
-    // Hide splash when app renders
     window.addEventListener('load', function() {
       setTimeout(function() {
         var s = document.getElementById('splash');
         if (s) { s.classList.add('hide'); setTimeout(function() { s.remove(); }, 300); }
       }, 500);
     });
-
-    // Register service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('sw.js').catch(function() {});
+        navigator.serviceWorker.register('%PUBLIC_URL%/sw.js').catch(function(e) { console.log('SW registration failed:', e); });
       });
     }
   </script>
