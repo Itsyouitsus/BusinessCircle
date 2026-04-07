@@ -14,6 +14,7 @@ import Forum from './pages/Forum';
 import News from './pages/News';
 import GuestTeaser from './components/GuestTeaser';
 import './styles/index.css';
+import InstallPrompt from './components/InstallPrompt';
 
 function PrivateRoute({ children }) {
   const { currentUser, loading } = useAuth();
@@ -68,6 +69,7 @@ function AppContent() {
         <Route path="/admin" element={<PrivateRoute><AdminRoute><Admin /></AdminRoute></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+      <InstallPrompt />
     </>
   );
 }
