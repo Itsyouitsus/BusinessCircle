@@ -51,16 +51,16 @@ export default function Login() {
   if (resetMode) {
     return (
       <div className="auth-page">
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <h1 style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 8 }}>Business Circle</h1>
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <h1 style={{ fontSize: 'clamp(3rem, 8vw, 5.5rem)', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 8 }}>Business Circle</h1>
           <p style={{ color: 'var(--dark-muted)', fontSize: '1rem' }}>
             A playground for entrepreneurs (to be) from all kinds of fields.<br />
             To play, help, pitch, converse, share, and celebrate. Together.
           </p>
         </div>
         <div className="auth-card">
-          <h1>Reset password</h1>
-          <p className="subtitle">Enter your email and we'll send you a reset link</p>
+          <h1 style={{ textAlign:"center" }}>Reset password</h1>
+          <p className="subtitle" style={{ textAlign:"center" }}>Enter your email and we'll send you a reset link</p>
           {error && <div className="auth-error">{error}</div>}
           <form onSubmit={handleReset}>
             <div className="form-group">
@@ -86,16 +86,16 @@ export default function Login() {
 
   return (
     <div className="auth-page">
-      <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <h1 style={{ fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 8 }}>Business Circle</h1>
+      <div style={{ textAlign: 'center', marginBottom: 48 }}>
+        <h1 style={{ fontSize: 'clamp(3rem, 8vw, 5.5rem)', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 8 }}>Business Circle</h1>
         <p style={{ color: 'var(--dark-muted)', fontSize: '1rem' }}>
           A playground for entrepreneurs (to be) from all kinds of fields.<br />
           To play, help, pitch, converse, share, and celebrate. Together.
         </p>
       </div>
       <div className="auth-card">
-        <h1>Welcome back</h1>
-        <p className="subtitle">Sign in to the Business Circle</p>
+        <h1 style={{ textAlign:"center" }}>Welcome back</h1>
+        <p className="subtitle" style={{ textAlign:"center" }}>Sign in to the Business Circle</p>
         {error && <div className="auth-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
